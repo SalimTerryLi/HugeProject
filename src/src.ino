@@ -12,6 +12,8 @@
 #define LGYELLOW 10
 #define LGBLUE 11
 
+#define SLIDEPWR 13
+
 unsigned long RedRef = 30, GreenRef = 25, BlueRef = 30;
 unsigned long RedStep = 40, GreenStep = 30, BlueStep = 32;
 
@@ -35,6 +37,8 @@ void setup() {
   pinMode(LGRED, INPUT);
   pinMode(LGYELLOW, INPUT);
   pinMode(LGBLUE, INPUT);
+  pinMode(SLIDEPWR,OUTPUT);
+  digitalWrite(SLIDEPWR,LOW);
   // put your setup code here, to run once:
   configureGY31(S0, S1, S2, S3, OUT);
   setOutputFreq(Percent20);
@@ -83,6 +87,8 @@ int samplecount = 0;
 int redC = 0, greenC = 0, blueC = 0, yellowC = 0;
 void loop() {
 
+  if(Serial.read()=='!'){digitalWrite(SLIDEPWR,LOW);}
+
   if (millis() - lastTickMS >= 1) {setServoPulse(0,250);
   setServoPulse(1,390);
   setServoPulse(2,250);
@@ -111,6 +117,7 @@ void loop() {
       }
       if (samplecount >= 3) {
         isItem = true;
+        digitalWrite(SLIDEPWR,HIGH);
         if (yellowC != 0) {
           itemColor = 3;
         }
@@ -146,6 +153,8 @@ void loop() {
       if (digitalRead(LGBLUE) == HIGH) {
         if (itemColor == 4) {
           push(2);
+        }else if(itemColor == 2){
+          push(3);
         }
         isPassed = true;
       }

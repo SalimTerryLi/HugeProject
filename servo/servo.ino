@@ -55,7 +55,6 @@ void setServoPulse(uint8_t n, double pulse) {
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("8 channel Servo test!");
 
   pwm.begin();
   
@@ -75,5 +74,9 @@ void loop() {
     pwm.setPWM(tmp-'0', 0, 315);
     delay(500);
     pwm.setPWM(tmp-'0', 0, 390);
+    if(tmp-'0'==3){
+      delay(1000);
+    }
+    Serial.print('!');
   }
 }
