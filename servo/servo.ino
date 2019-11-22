@@ -20,63 +20,37 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
-// called this way, it uses the default address 0x40
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-// you can also call it with a different address you want
-//Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x41);
-// you can also call it with a different address and I2C interface
-//Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(&Wire, 0x40);
 
-// Depending on your servo make, the pulse width min and max may vary, you 
-// want these to be as small/large as possible without hitting the hard stop
-// for max range. You'll have to tweak them as necessary to match the servos you
-// have!
-#define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
-
-// our servo # counter
-uint8_t servonum = 0;
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(); //创建PCA9685舵机驱动板
 
 
-
-// you can use this function if you'd like to set the pulse length in seconds
-// e.g. setServoPulse(0, 0.001) is a ~1 millisecond pulse width. its not precise!
-void setServoPulse(uint8_t n, double pulse) {
-  double pulselength;
-  
-  pulselength = 1000000;   // 1,000,000 us per second
-  pulselength /= 60;   // 60 Hz
-  pulselength /= 4096;  // 12 bits of resolution
-  pulse *= 1000000;  // convert to us
-  pulse /= pulselength;
-  pwm.setPWM(n, 0, pulse);
-}
-
+#define SERVOMIN  150 // 定义最小脉冲宽度
+#define SERVOMAX  600 // 最大脉冲宽度
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // 设置串口波特率9600
 
-  pwm.begin();
+  pwm.begin(); // 启动PCA9685
   
-  pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
+  pwm.setPWMFreq(60); // 设置PWM频率为60HZ
 
   delay(100);
 
-  pwm.setPWM(0, 0, 390);
+  pwm.setPWM(0, 0, 390); // 复位三个舵机位置
   pwm.setPWM(1, 0, 390);
   pwm.setPWM(2, 0, 390);
 }
 
 void loop() {
-  int tmp=Serial.read();
-  if(tmp!=-1){
+  int tmp=Serial.read(); // 不停尝试读取串口
+  if(tmp!=-1){ // 如果有读到内容
     delay(1200);
-    pwm.setPWM(tmp-'0', 0, 315);
+    pwm.setPWM(tmp-'0', 0, 315); // 将读到的舵机旋转至推下的角度，把东西丢进去
     delay(500);
-    pwm.setPWM(tmp-'0', 0, 390);
-    if(tmp-'0'==3){
+    pwm.setPWM(tmp-'0', 0, 390); // 复位该舵机
+    if(tmp-'0'==3){ // 如果读到的舵机为3，即不需要舵机运动，只依靠传送带将物品投入最后一个框框，这时候就需要延时一下，等待传送带把东西丢进框里。
       delay(1000);
     }
-    Serial.print('!');
+    Serial.print('!'); // 告诉另一个单片机工作完成了
   }
 }
